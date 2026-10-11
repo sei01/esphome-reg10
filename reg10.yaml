@@ -1,0 +1,91 @@
+# Remote package for ESPHome 2025.5.1 + Arduino. Not a standalone node.
+# The main drazice.yaml supplies the Git external_components entry.
+# Full ESPHome build and hardware operation are not verified.
+
+uart:
+  id: reg10_uart
+  tx_pin: GPIO17
+  rx_pin: GPIO18
+  baud_rate: 38400
+  data_bits: 8
+  parity: NONE
+  stop_bits: 1
+  rx_buffer_size: 512
+  # Temporarily uncomment for byte-level diagnostics:
+  # debug:
+  #   direction: BOTH
+  #   dummy_receiver: false
+  #   after:
+  #     timeout: 20ms
+
+reg10:
+  id: heatpump_reg10
+  uart_id: reg10_uart
+  direction_pin: GPIO21  # RS485_EN; controlled by REG10, not by uart.
+  slave_address: 0x01
+  master_address: 0x80
+  update_interval: 15s
+  response_timeout: 1s
+  request_gap: 100ms
+  retries: 2
+  stale_after: 60s
+  tcp_port: 502  # Set 0 to disable TCP for an initial HA-only test.
+  tcp_unit_id: 1
+
+  # Physical placement of the four sensors has not been supplied.
+  temperature_1:
+    name: "TC T1"
+  temperature_2:
+    name: "TC T2"
+  temperature_3:
+    name: "TC T3"
+  temperature_4:
+    name: "TC T4"
+  # Units, scaling and primary/secondary assignment are NOT independently
+  # confirmed by the supplied sources. Preserve raw values first.
+  flow_1_raw:
+    id: reg10_flow_0048_raw
+    name: "TC Prutok 0x0048 raw"
+  flow_2_raw:
+    id: reg10_flow_004a_raw
+    name: "TC Prutok 0x004A raw"
+  outputs_raw:
+    name: "TC Vystupy raw"
+    entity_category: diagnostic
+  # Names follow serial.c; verify the meaning/polarity on the real controller.
+  # On communication loss these booleans KEEP their last value in 2025.5.1.
+  # Always gate their use with "REG10 Vystupy aktualni" (output_online).
+  out1:
+    name: "TC OUT1 Cerpadlo solar"
+  out2:
+    name: "TC OUT2 Porucha"
+  out3:
+    name: "TC OUT3 Kompresor"
+  out4:
+    name: "TC OUT4 Elektricky ohrev"
+  out5:
+    name: "TC OUT5 Cerpadlo vody"
+  all_online:
+    name: "REG10 Vsechny bloky aktualni"
+  temperature_online:
+    name: "REG10 Teploty aktualni"
+  output_online:
+    name: "REG10 Vystupy aktualni"
+  flow_online:
+    name: "REG10 Prutoky aktualni"
+  valid_mask:
+    name: "REG10 Platne bloky"
+  temperature_valid_mask:
+    name: "REG10 Platna teplotni cidla"
+  temperature_age:
+    name: "REG10 Stari teplot"
+  output_age:
+    name: "REG10 Stari vystupu"
+  flow_age:
+    name: "REG10 Stari prutoku"
+  good_frames:
+    name: "REG10 Platne odpovedi"
+  crc_errors:
+    name: "REG10 Chyby CRC"
+  timeouts:
+    name: "REG10 Timeouty"
